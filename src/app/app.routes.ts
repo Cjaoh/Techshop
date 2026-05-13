@@ -13,9 +13,13 @@ export const routes: Routes = [
     path: 'cart', 
     loadComponent: () => import('./features/cart/cart.component').then(m => m.CartComponent) 
   },
-// Ajoute cette ligne juste en dessous de la route 'cart' :
 { 
   path: 'products/:id', 
   loadComponent: () => import('./features/products/product-detail/product-detail.component').then(m => m.ProductDetailComponent) 
-}
+},
+  { 
+    path: 'orders', 
+    loadComponent: () => import('./features/orders/orders.component').then(m => m.OrdersComponent) 
+  }
+
 ];

@@ -19,17 +19,18 @@
     <div class="flex flex-col gap-1.5">
       <div class="flex justify-between items-center">
         <label class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Prix maximum</label>
-        <span class="text-sm font-extrabold text-blue-600 dark:text-blue-400">{{ maxPrice() }} €</span>
+        <span class="text-sm font-extrabold text-blue-600 dark:text-blue-400">{{ maxPrice() | currency:'MGA':'Ar ':'1.0-0' }}</span>
       </div>
       <input type="range" 
              min="0" 
-             max="1000" 
+             max="5000000" 
+             step="10000"
              [value]="maxPrice()" 
              (input)="updatePrice($event)" 
              class="w-full h-2 bg-gray-200 dark:bg-neutral-800 rounded-lg appearance-none cursor-pointer accent-blue-600">
     </div>
 
-    <!-- Filtre 3 : Menu déroulant de tri -->
+    <!-- Filtre 3 : Menu déroulant de tri (Avec ajout du Tri par Note) -->
     <div class="flex flex-col gap-1.5">
       <label class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Trier par</label>
       <select [value]="sortBy()" 
@@ -38,6 +39,7 @@
         <option value="default">Position par défaut</option>
         <option value="asc">Prix : du moins cher au plus cher</option>
         <option value="desc">Prix : du plus cher au moins cher</option>
+        <option value="rating">Évaluation : les mieux notés d'abord</option>
       </select>
     </div>
 
@@ -78,16 +80,40 @@
       <!-- Détails -->
       <div class="p-4 flex flex-col flex-grow">
         <span class="text-[10px] uppercase font-bold text-blue-500 mb-1 tracking-wider">{{ product.category }}</span>
+        
         <a [routerLink]="['/products', product.id]" class="hover:text-blue-600 transition-colors cursor-pointer">
           <h3 class="text-sm font-bold text-gray-900 dark:text-white line-clamp-2 mb-1 h-10">{{ product.title }}</h3>
         </a>
+
+        <!-- Note étoile de l'article -->
+        <div *ngIf="product.rating" class="flex items-center gap-1 mb-2 text-xs text-amber-500 font-medium">
+          ⭐ <span>{{ product.rating.rate }} / 5 ({{ product.rating.count }})</span>
+        </div>
+
         <p class="text-gray-500 dark:text-gray-400 text-xs line-clamp-2 mb-4 flex-grow">{{ product.description }}</p>
         
-        <!-- Prix & Action -->
+        <!-- Condition d'affichage du Stock Fictif (Remis à sa vraie place) -->
+        <div class="mt-1 mb-4 text-xs font-semibold">
+          <span *ngIf="product.stock !== undefined && product.stock > 5" class="text-green-600 bg-green-50 dark:bg-green-950/30 px-2 py-1 rounded">
+            ✅ En stock ({{ product.stock }})
+          </span>
+          <span *ngIf="product.stock !== undefined && product.stock <= 5 && product.stock > 0" class="text-orange-500 bg-orange-50 dark:bg-orange-950/30 px-2 py-1 rounded animate-pulse">
+            ⚠️ Plus que {{ product.stock }} articles !
+          </span>
+          <span *ngIf="product.stock === 0" class="text-red-500 bg-red-50 dark:bg-red-950/30 px-2 py-1 rounded">
+            ❌ Rupture de stock
+          </span>
+        </div>
+
+        <!-- Prix & Action (Bouton d'achat optimisé selon stock) -->
         <div class="flex items-center justify-between mt-auto pt-2 border-t border-gray-100 dark:border-white/5">
-          <span class="text-base font-extrabold text-blue-600 dark:text-blue-400">{{ product.price | currency:'MGA':'Ar ':'1.0-0':'mg' }}</span>
-          <button (click)="addToCart(product)" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-3 py-1.5 rounded-lg transition-colors duration-200 text-xs">
-            Ajouter
+          <span class="text-base font-extrabold text-blue-600 dark:text-blue-400">{{ product.price | currency:'MGA':'Ar ':'1.0-0' }}</span>
+          
+          <button (click)="addToCart(product)" 
+                  [disabled]="product.stock === 0"
+                  [ngClass]="product.stock === 0 ? 'bg-gray-300 dark:bg-neutral-800 text-gray-500 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 text-white'"
+                  class="font-semibold px-3 py-1.5 rounded-lg transition-colors duration-200 text-xs">
+            {{ product.stock === 0 ? 'Épuisé' : 'Ajouter' }}
           </button>
         </div>
       </div>

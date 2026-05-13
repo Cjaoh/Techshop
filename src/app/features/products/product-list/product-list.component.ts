@@ -24,7 +24,7 @@ export class ProductListComponent implements OnInit {
   // Signaux d'état pour les 3 filtres avancés
   selectedCategory = signal<string>('all');
   searchQuery = signal<string>('');
-  maxPrice = signal<number>(1000);
+  maxPrice = signal<number>(5000000); // Initialisation par défaut à 5 000 000 Ar
   sortBy = signal<string>('default');
 
   // Liste statique des catégories
@@ -54,26 +54,31 @@ export class ProductListComponent implements OnInit {
     result = result.filter(p => p.price <= limitPrice);
 
     // 4. Tri des données (Défaut, Croissant, Décroissant)
-    const sort = this.sortBy();
+     const sort = this.sortBy();
     if (sort === 'asc') {
       result = [...result].sort((a, b) => a.price - b.price);
     } else if (sort === 'desc') {
       result = [...result].sort((a, b) => b.price - a.price);
+    } else if (sort === 'rating') {
+      // Classe les produits selon l'évaluation décroissante (les meilleures notes en premier)
+      result = [...result].sort((a, b) => (b.rating?.rate || 0) - (a.rating?.rate || 0));
     }
 
     return result;
   });
 
-  ngOnInit() {
+      ngOnInit() {
     this.productService.getProducts().subscribe({
       next: (data) => {
-        this.products.set(data);
-        // Ajuste dynamiquement le prix max initial par rapport au produit le plus cher reçu
-        if (data.length > 0) {
-          const highestPrice = Math.max(...data.map(p => p.price));
-          this.maxPrice.set(Math.ceil(highestPrice));
-        }
-        this.loading.set(false);
+        // Conversion propre des prix en Ariary
+        const productsInAriary = data.map(p => ({
+          ...p,
+          price: Math.round(p.price * 4500),
+          stock: Math.floor(Math.random() * 16) // Stock aléatoire entre 0 et 15
+        }));
+        
+        this.products.set(productsInAriary);
+        this.loading.set(false); // Le chargement s'arrête, les données sont prêtes !
       },
       error: (err) => {
         console.error('Erreur API :', err);
@@ -81,6 +86,8 @@ export class ProductListComponent implements OnInit {
       }
     });
   }
+
+
 
   changeCategory(category: string) {
     this.selectedCategory.set(category);
