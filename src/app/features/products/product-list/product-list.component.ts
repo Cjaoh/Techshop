@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { ProductService } from '../../../services/product.service';
 import { CartService } from '../../../services/cart.service';
+import { ToastService } from '../../../services/toast.service';
 import { Product } from '../../../models/product.model';
 
 @Component({
@@ -16,6 +17,7 @@ import { Product } from '../../../models/product.model';
 export class ProductListComponent implements OnInit {
   private productService = inject(ProductService);
   private cartService = inject(CartService);
+  private toastService = inject(ToastService);
 
   // Signaux d'état pour les données de l'API
   products = signal<Product[]>([]);
@@ -24,7 +26,7 @@ export class ProductListComponent implements OnInit {
   // Signaux d'état pour les 3 filtres avancés
   selectedCategory = signal<string>('all');
   searchQuery = signal<string>('');
-  maxPrice = signal<number>(5000000); // Initialisation par défaut à 5 000 000 Ar
+  maxPrice = signal<number>(5000000);
   sortBy = signal<string>('default');
 
   // Liste statique des catégories
@@ -53,32 +55,35 @@ export class ProductListComponent implements OnInit {
     const limitPrice = this.maxPrice();
     result = result.filter(p => p.price <= limitPrice);
 
-    // 4. Tri des données (Défaut, Croissant, Décroissant)
-     const sort = this.sortBy();
+    // 4. Tri des données (Défaut, Croissant, Décroissant, Note)
+    const sort = this.sortBy();
     if (sort === 'asc') {
       result = [...result].sort((a, b) => a.price - b.price);
     } else if (sort === 'desc') {
       result = [...result].sort((a, b) => b.price - a.price);
     } else if (sort === 'rating') {
-      // Classe les produits selon l'évaluation décroissante (les meilleures notes en premier)
       result = [...result].sort((a, b) => (b.rating?.rate || 0) - (a.rating?.rate || 0));
     }
 
     return result;
   });
 
-      ngOnInit() {
+  ngOnInit() {
     this.productService.getProducts().subscribe({
       next: (data) => {
-        // Conversion propre des prix en Ariary
         const productsInAriary = data.map(p => ({
           ...p,
           price: Math.round(p.price * 4500),
-          stock: Math.floor(Math.random() * 16) // Stock aléatoire entre 0 et 15
+          stock: Math.floor(Math.random() * 16)
         }));
         
         this.products.set(productsInAriary);
-        this.loading.set(false); // Le chargement s'arrête, les données sont prêtes !
+        
+        if (productsInAriary.length > 0) {
+          const highestPrice = Math.max(...productsInAriary.map(p => p.price));
+          this.maxPrice.set(Math.ceil(highestPrice));
+        }
+        this.loading.set(false);
       },
       error: (err) => {
         console.error('Erreur API :', err);
@@ -86,8 +91,6 @@ export class ProductListComponent implements OnInit {
       }
     });
   }
-
-
 
   changeCategory(category: string) {
     this.selectedCategory.set(category);
@@ -108,7 +111,19 @@ export class ProductListComponent implements OnInit {
     this.sortBy.set(select.value);
   }
 
-  addToCart(product: Product) {
-    this.cartService.addToCart(product);
+  // Version unique et propre de la fonction d'ajout
+    addToCart(product: Product) {
+    // Vérifie si le stock est disponible avant d'ajouter
+    if (product.stock !== undefined && product.stock > 0) {
+      // 1. Ajoute l'article au panier global
+      this.cartService.addToCart(product);
+      
+      // 2. Diminue le stock de 1 en direct sur l'écran (OPTION DÉDUCTION REEL)
+      product.stock -= 1;
+      
+      // 3. Déclenche la notification Toast
+      this.toastService.show(`"${product.title}" ajouté au panier !`);
+    }
   }
+
 }

@@ -1,21 +1,34 @@
 <div class="container mx-auto p-4 max-w-4xl min-h-[calc(100vh-64px)]">
   <h2 class="text-2xl font-bold mb-2 text-gray-800 dark:text-white">Suivi de vos commandes</h2>
-  <p class="text-gray-500 text-sm mb-6">Consultez l'état et l'historique de vos achats TechShop.</p>
+  <p class="text-gray-500 text-sm mb-6">Consultez l'état, l'historique et l'analyse de vos transactions.</p>
 
-  <!-- SI AUCUNE COMMANDE -->
-  <div *ngIf="orders().length === 0" class="text-center py-12 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/5 rounded-xl shadow-sm">
-    <div class="text-gray-400 text-5xl mb-4">📦</div>
-    <p class="text-gray-600 dark:text-gray-400 text-base font-medium mb-4">Vous n'avez pas encore passé de commande.</p>
-    <a routerLink="/products" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-5 py-2 rounded-lg text-xs transition-colors">
-      Faire vos achats
-    </a>
+  <!-- DASHBOARD ANALYTIQUE -->
+  <div *ngIf="orders().length > 0" class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+    <div class="bg-white dark:bg-white/5 border border-gray-200 dark:border-white/5 p-4 rounded-xl shadow-sm">
+      <span class="text-xs text-gray-400 font-bold uppercase tracking-wider">Total Investi</span>
+      <p class="text-xl font-extrabold text-blue-600 dark:text-blue-400 mt-1">{{ totalSpent() | currency:'MGA':'Ar ':'1.0-0' }}</p>
+    </div>
+    <div class="bg-white dark:bg-white/5 border border-gray-200 dark:border-white/5 p-4 rounded-xl shadow-sm">
+      <span class="text-xs text-gray-400 font-bold uppercase tracking-wider">Articles Commandés</span>
+      <p class="text-xl font-extrabold text-gray-800 dark:text-white mt-1">{{ totalItemsBought() }} item(s)</p>
+    </div>
+    <div class="bg-white dark:bg-white/5 border border-gray-200 dark:border-white/5 p-4 rounded-xl shadow-sm">
+      <span class="text-xs text-gray-400 font-bold uppercase tracking-wider">Panier Moyen</span>
+      <p class="text-xl font-extrabold text-emerald-500 mt-1">{{ averageOrderValue() | currency:'MGA':'Ar ':'1.0-0' }}</p>
+    </div>
   </div>
 
-  <!-- LISTE DES COMMANDES -->
+  <!-- SI AUCUNE COMMANDE -->
+  <div *ngIf="orders().length === 0" class="text-center py-12 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/5 rounded-xl">
+    <p class="text-gray-500 dark:text-gray-400 text-sm font-medium mb-4">Vous n'avez pas encore passé de commande.</p>
+    <a routerLink="/products" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-xs font-semibold">Boutique</a>
+  </div>
+
+  <!-- TABLEAU HISTORIQUE NETTOYÉ -->
   <div *ngIf="orders().length > 0" class="overflow-x-auto bg-white dark:bg-white/5 border border-gray-200 dark:border-white/5 rounded-xl shadow-sm">
     <table class="w-full text-left border-collapse text-sm">
       <thead>
-        <tr class="bg-gray-50 dark:bg-neutral-900 border-b border-gray-200 dark:border-white/10 text-gray-500 dark:text-gray-400 font-semibold text-xs uppercase tracking-wider">
+        <tr class="bg-gray-50 dark:bg-neutral-900 border-b border-gray-200 dark:border-white/10 text-gray-500 text-xs font-bold uppercase">
           <th class="p-4">N° Commande</th>
           <th class="p-4">Date</th>
           <th class="p-4">Articles</th>
@@ -26,11 +39,21 @@
       <tbody class="divide-y divide-gray-100 dark:divide-white/5 text-gray-700 dark:text-gray-300">
         <tr *ngFor="let order of orders()" class="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
           <td class="p-4 font-mono font-bold text-blue-600 dark:text-blue-400">{{ order.id }}</td>
-          <td class="p-4">{{ order.date }}</td>
-          <td class="p-4">{{ order.itemsCount }} item(s)</td>
+          
+          <!-- DATE CORRIGÉE : Affiche le texte brut de la date -->
+          <td class="p-4 text-gray-500 dark:text-gray-400">{{ order.date }}</td>
+          
+          <td class="p-4">{{ order.itemsCount }} article(s)</td>
           <td class="p-4 font-extrabold">{{ order.total | currency:'MGA':'Ar ':'1.0-0' }}</td>
+          
+          <!-- STATUT UNIQUE -->
           <td class="p-4">
-            <span class="inline-block bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 text-xs font-semibold px-2.5 py-1 rounded-full">
+            <span [ngClass]="{
+                    'bg-orange-50 text-orange-600 dark:bg-orange-950/30 dark:text-orange-400': order.status.includes('Préparation'),
+                    'bg-blue-50 text-blue-600 dark:bg-blue-950/30 dark:text-blue-400': order.status.includes('Expédié'),
+                    'bg-green-50 text-green-600 dark:bg-green-950/30 dark:text-green-400': order.status.includes('Livré')
+                  }"
+                  class="inline-block text-xs font-bold px-2.5 py-1 rounded-full shadow-sm">
               {{ order.status }}
             </span>
           </td>

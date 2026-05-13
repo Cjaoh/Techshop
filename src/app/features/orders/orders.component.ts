@@ -13,6 +13,10 @@ import { OrderService } from '../../services/order.service';
 export class OrdersComponent {
   private orderService = inject(OrderService);
   
-  // Lecture du signal contenant la liste des commandes locales
   orders = this.orderService.orders;
+  
+  // EXPOSITION DES SIGNALS DE STATISTIQUES POUR L'OPTION 3 :
+  totalSpent = this.orderService.totalSpent;
+  totalItemsBought = this.orderService.totalItemsBought;
+  averageOrderValue = this.orderService.averageOrderValue;
 }

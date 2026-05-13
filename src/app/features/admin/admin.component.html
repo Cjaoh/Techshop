@@ -1,0 +1,115 @@
+<div class="container mx-auto p-4 max-w-6xl min-h-[calc(100vh-64px)] flex flex-col justify-center">
+
+  <!-- 1. FORMULAIRE DE CONNEXION ADMIN SECURISE -->
+  <div *ngIf="!isAuthenticated()" class="w-full max-w-md mx-auto bg-white dark:bg-white/5 border border-gray-200 dark:border-white/5 p-8 rounded-2xl shadow-lg">
+    <div class="text-center mb-6">
+      <span class="inline-block bg-red-500/10 text-red-500 text-xs font-bold px-2.5 py-1 rounded mb-2 uppercase tracking-wider">🔒 Accès Restreint</span>
+      <h2 class="text-xl font-bold text-gray-900 dark:text-white">Connexion Administrateur</h2>
+      <p class="text-gray-500 text-xs mt-1">Veuillez entrer vos identifiants pour gérer les commandes.</p>
+    </div>
+
+    <form (ngSubmit)="login()" class="space-y-4">
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs font-bold uppercase tracking-wider text-gray-400">Adresse Email</label>
+        <input type="email" 
+               [ngModel]="usernameInput()" 
+               (ngModelChange)="usernameInput.set($event)"
+               name="username"
+               placeholder="ced@gmail.com" 
+               class="w-full bg-gray-50 dark:bg-black border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-gray-800 dark:text-white" required>
+      </div>
+
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs font-bold uppercase tracking-wider text-gray-400">Mot de passe</label>
+        <input type="password" 
+               [ngModel]="passwordInput()" 
+               (ngModelChange)="passwordInput.set($event)"
+               name="password"
+               placeholder="••••••••" 
+               class="w-full bg-gray-50 dark:bg-black border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-gray-800 dark:text-white" required>
+      </div>
+
+      <p *ngIf="loginError()" class="text-xs text-red-500 font-medium pt-1">⚠️ {{ loginError() }}</p>
+
+      <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-lg text-sm transition-colors shadow-sm mt-2">
+        Se connecter
+      </button>
+    </form>
+  </div>
+
+  <!-- 2. PANNEAU DE GESTION DES COMMANDES (S'affiche uniquement après connexion) -->
+  <div *ngIf="isAuthenticated()" class="w-full animate-in fade-in duration-300">
+    <div class="flex justify-between items-center mb-6 border-b border-gray-200 dark:border-white/10 pb-4">
+      <div>
+        <h2 class="text-2xl font-bold text-gray-800 dark:text-white">Panneau d'Administration</h2>
+        <p class="text-gray-500 text-sm">Gestion des statuts logistiques et analyse financière de la boutique.</p>
+      </div>
+      <button (click)="logout()" class="text-xs bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 text-gray-600 dark:text-gray-300 px-3 py-1.5 rounded-lg transition-colors">
+        Déconnexion
+      </button>
+    </div>
+
+    <!-- GRILLE PRINCIPALE -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+      
+      <!-- COLONNE GAUCHE : GRAPHES INTERACTIFS (2/3 de l'écran) -->
+      <div class="lg:col-span-2 space-y-4">
+        
+        <!-- Onglets analytiques -->
+        <div class="flex gap-2 border-b border-gray-200 dark:border-white/10 pb-2">
+          <button (click)="setTab('status')" 
+                  [ngClass]="activeTab() === 'status' ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-400'"
+                  class="text-xs font-bold px-4 py-2 rounded-lg transition-all">
+            📊 Flux par Statuts (3 Courbes)
+          </button>
+          <button (click)="setTab('ca')" 
+                  [ngClass]="activeTab() === 'ca' ? 'bg-purple-600 text-white' : 'bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-400'"
+                  class="text-xs font-bold px-4 py-2 rounded-lg transition-all">
+            💰 Chiffre d'Affaires Global (4ème Courbe)
+          </button>
+        </div>
+
+        <div class="bg-white dark:bg-white/5 border border-gray-200 dark:border-white/5 p-4 rounded-xl shadow-sm">
+          <div class="relative h-80 w-full">
+            <canvas #salesChart></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- COLONNE DROITE : VALIDATION DES ACHATS (1/3 de l'écran) -->
+      <div class="bg-white dark:bg-white/5 border border-gray-200 dark:border-white/5 p-4 rounded-xl shadow-sm h-[400px] flex flex-col">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-4">Validation des commandes clients</h3>
+        
+        <div *ngIf="orders().length === 0" class="text-center py-12 text-gray-500 text-sm flex-grow flex items-center justify-center">
+          Aucune commande enregistrée.
+        </div>
+
+        <div *ngIf="orders().length > 0" class="space-y-3 overflow-y-auto flex-grow pr-1">
+          <div *ngFor="let order of orders()" class="p-3 bg-gray-50 dark:bg-black/40 rounded-lg border border-gray-100 dark:border-white/5 flex flex-col gap-2">
+            <div class="flex justify-between items-center">
+              <span class="font-mono font-bold text-xs text-blue-600 dark:text-blue-400">{{ order.id }}</span>
+              <span [ngClass]="{
+                      'bg-orange-50 text-orange-600 dark:bg-orange-950/30 dark:text-orange-400': order.status.includes('Préparation'),
+                      'bg-blue-50 text-blue-600 dark:bg-blue-950/30 dark:text-blue-400': order.status.includes('Expédié'),
+                      'bg-green-50 text-green-600 dark:bg-green-950/30 dark:text-green-400': order.status.includes('Livré')
+                    }"
+                    class="text-[10px] font-extrabold px-2 py-0.5 rounded-full">
+                {{ order.status }}
+              </span>
+            </div>
+            
+            <div class="flex justify-between items-center mt-1">
+              <span class="text-xs font-bold text-gray-800 dark:text-gray-200">{{ order.total | currency:'MGA':'Ar ':'1.0-0' }}</span>
+              <div class="flex gap-1">
+                <button (click)="shipOrder(order.id)" [disabled]="!order.status.includes('Préparation')" [ngClass]="!order.status.includes('Préparation') ? 'opacity-20 cursor-not-allowed' : 'bg-blue-600 text-white'" class="text-[10px] font-bold px-2 py-1 rounded">Expédier</button>
+                <button (click)="deliverOrder(order.id)" [disabled]="order.status.includes('Livré')" [ngClass]="order.status.includes('Livré') ? 'opacity-20 cursor-not-allowed' : 'bg-green-600 text-white'" class="text-[10px] font-bold px-2 py-1 rounded">Livrer</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>

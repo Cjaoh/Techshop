@@ -7,7 +7,7 @@
     <router-outlet></router-outlet>
   </main>
 
-  <!-- Pied de page (Footer) intégré directement -->
+  <!-- Pied de page (Footer) unique et fonctionnel -->
   <footer class="border-t border-gray-200 dark:border-white/5 bg-white dark:bg-black py-6 text-center text-sm text-gray-500 dark:text-gray-400">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-4">
       <p>© 2026 TechShop Premium. Tous droits réservés.</p>
@@ -15,7 +15,15 @@
         <a routerLink="/" class="hover:text-blue-600 transition-colors">Accueil</a>
         <a routerLink="/products" class="hover:text-blue-600 transition-colors">Boutique</a>
         <a routerLink="/cart" class="hover:text-blue-600 transition-colors">Panier</a>
+        <a routerLink="/admin" class="text-xs text-gray-400 dark:text-neutral-600 hover:text-red-500 transition-colors font-mono">🔒 Admin</a>
       </div>
     </div>
   </footer>
+
+  <!-- Toast flottant -->
+  <div *ngIf="currentToast()" 
+       class="fixed bottom-5 right-5 z-50 flex items-center px-4 py-3 rounded-xl shadow-lg text-sm font-semibold bg-emerald-500 text-white border-transparent">
+    <span class="mr-2">🎉</span>
+    {{ currentToast()?.message }}
+  </div>
 </div>
