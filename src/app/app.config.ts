@@ -1,8 +1,13 @@
 import { ApplicationConfig } from '@angular/core';
-import { provideRouter } from '@angular/router';
-
+import { provideRouter, withComponentInputBinding } from '@angular/router';
+import { provideHttpClient } from '@angular/common/http';
+import { provideAnimations } from '@angular/platform-browser/animations'; // Indispensable pour l'effet Premium
 import { routes } from './app.routes';
 
 export const appConfig: ApplicationConfig = {
-  providers: [provideRouter(routes)]
+  providers: [
+    provideRouter(routes, withComponentInputBinding()), 
+    provideHttpClient(),
+    provideAnimations()
+  ]
 };

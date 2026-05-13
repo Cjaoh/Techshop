@@ -1,0 +1,97 @@
+<div class="container mx-auto p-4">
+  <h2 class="text-2xl font-bold mb-2 text-gray-800 dark:text-white">Notre Catalogue Premium</h2>
+  <p class="text-gray-500 text-sm mb-6">Explorez, recherchez et triez nos meilleurs articles high-tech.</p>
+
+  <!-- PANNEAU DES FILTRES AVANCÉS -->
+  <div class="bg-white dark:bg-white/5 p-4 rounded-xl border border-gray-200 dark:border-white/5 mb-8 grid grid-cols-1 md:grid-cols-3 gap-6 shadow-sm">
+    
+    <!-- Filtre 1 : Barre de recherche -->
+    <div class="flex flex-col gap-1.5">
+      <label class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Recherche</label>
+      <input type="text" 
+             [value]="searchQuery()" 
+             (input)="updateSearch($event)" 
+             placeholder="Rechercher un article..." 
+             class="w-full bg-gray-50 dark:bg-black border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500 text-gray-800 dark:text-white">
+    </div>
+
+    <!-- Filtre 2 : Tranche de prix max -->
+    <div class="flex flex-col gap-1.5">
+      <div class="flex justify-between items-center">
+        <label class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Prix maximum</label>
+        <span class="text-sm font-extrabold text-blue-600 dark:text-blue-400">{{ maxPrice() }} €</span>
+      </div>
+      <input type="range" 
+             min="0" 
+             max="1000" 
+             [value]="maxPrice()" 
+             (input)="updatePrice($event)" 
+             class="w-full h-2 bg-gray-200 dark:bg-neutral-800 rounded-lg appearance-none cursor-pointer accent-blue-600">
+    </div>
+
+    <!-- Filtre 3 : Menu déroulant de tri -->
+    <div class="flex flex-col gap-1.5">
+      <label class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Trier par</label>
+      <select [value]="sortBy()" 
+              (change)="updateSort($event)" 
+              class="w-full bg-gray-50 dark:bg-black border border-gray-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500 text-gray-800 dark:text-white">
+        <option value="default">Position par défaut</option>
+        <option value="asc">Prix : du moins cher au plus cher</option>
+        <option value="desc">Prix : du plus cher au moins cher</option>
+      </select>
+    </div>
+
+  </div>
+
+  <!-- BARRE DES CATÉGORIES -->
+  <div class="flex flex-wrap gap-2 mb-8">
+    <button *ngFor="let cat of categories" 
+            (click)="changeCategory(cat)"
+            [ngClass]="selectedCategory() === cat ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-800 dark:bg-white/5 dark:text-gray-300'"
+            class="px-4 py-1.5 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all duration-200 shadow-sm border border-transparent hover:border-blue-600/30">
+      {{ cat === 'all' ? 'Tout voir' : cat }}
+    </button>
+  </div>
+
+  <!-- SPINNER DE CHARGEMENT -->
+  <div *ngIf="loading()" class="flex justify-center items-center py-12">
+    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600 mx-auto"></div>
+    <span class="ml-3 text-gray-600 dark:text-gray-400 font-medium">Chargement des articles...</span>
+  </div>
+
+  <!-- MESSAGE SI AUCUN PRODUIT TROUVÉ -->
+  <div *ngIf="!loading() && filteredProducts().length === 0" class="text-center py-12 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/5 rounded-xl">
+    <p class="text-gray-500 dark:text-gray-400 font-medium">Aucun article ne correspond à vos critères de recherche.</p>
+  </div>
+
+  <!-- GRILLE DES PRODUITS FILTRÉS -->
+  <div *ngIf="!loading()" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+    <div *ngFor="let product of filteredProducts()" class="bg-white dark:bg-white/5 border border-gray-200 dark:border-white/5 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 flex flex-col h-full">
+      
+      <!-- Image cliquable vers les détails -->
+      <div class="relative pt-[100%] bg-gray-50 dark:bg-neutral-900 p-4">
+        <a [routerLink]="['/products', product.id]">
+          <img [src]="product.image || 'assets/placeholder.jpg'" [alt]="product.title" class="absolute top-0 left-0 w-full h-full object-contain p-4 cursor-pointer">
+        </a>
+      </div>
+
+      <!-- Détails -->
+      <div class="p-4 flex flex-col flex-grow">
+        <span class="text-[10px] uppercase font-bold text-blue-500 mb-1 tracking-wider">{{ product.category }}</span>
+        <a [routerLink]="['/products', product.id]" class="hover:text-blue-600 transition-colors cursor-pointer">
+          <h3 class="text-sm font-bold text-gray-900 dark:text-white line-clamp-2 mb-1 h-10">{{ product.title }}</h3>
+        </a>
+        <p class="text-gray-500 dark:text-gray-400 text-xs line-clamp-2 mb-4 flex-grow">{{ product.description }}</p>
+        
+        <!-- Prix & Action -->
+        <div class="flex items-center justify-between mt-auto pt-2 border-t border-gray-100 dark:border-white/5">
+          <span class="text-base font-extrabold text-blue-600 dark:text-blue-400">{{ product.price | currency:'MGA':'Ar ':'1.0-0':'mg' }}</span>
+          <button (click)="addToCart(product)" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-3 py-1.5 rounded-lg transition-colors duration-200 text-xs">
+            Ajouter
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
