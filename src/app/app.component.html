@@ -1,13 +1,10 @@
 <div class="flex flex-col min-h-screen bg-gray-50 dark:bg-black">
-  <!-- Barre de navigation supérieure -->
   <app-navbar></app-navbar>
 
-  <!-- Zone de contenu dynamique -->
   <main class="flex-grow">
     <router-outlet></router-outlet>
   </main>
 
-  <!-- Pied de page (Footer) unique et fonctionnel -->
   <footer class="border-t border-gray-200 dark:border-white/5 bg-white dark:bg-black py-6 text-center text-sm text-gray-500 dark:text-gray-400">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-4">
       <p>© 2026 TechShop Premium. Tous droits réservés.</p>
@@ -15,15 +12,41 @@
         <a routerLink="/" class="hover:text-blue-600 transition-colors">Accueil</a>
         <a routerLink="/products" class="hover:text-blue-600 transition-colors">Boutique</a>
         <a routerLink="/cart" class="hover:text-blue-600 transition-colors">Panier</a>
-        <a routerLink="/admin" class="text-xs text-gray-400 dark:text-neutral-600 hover:text-red-500 transition-colors font-mono">🔒 Admin</a>
+        
+        <!-- LIEN CLIENT EXCLUSIF : Si connecté affiche Déconnexion, sinon ouvre la pop-up -->
+        <button *ngIf="!isAdmin()" (click)="openLoginModal()" class="text-xs text-gray-400 dark:text-neutral-600 hover:text-red-500 transition-colors font-mono cursor-pointer">🔒 Admin</button>
+        <button *ngIf="isAdmin()" (click)="logoutAdmin()" class="text-xs text-red-500 font-mono font-bold cursor-pointer">🔓 Déconnexion Admin</button>
       </div>
     </div>
   </footer>
 
-  <!-- Toast flottant -->
-  <div *ngIf="currentToast()" 
-       class="fixed bottom-5 right-5 z-50 flex items-center px-4 py-3 rounded-xl shadow-lg text-sm font-semibold bg-emerald-500 text-white border-transparent">
-    <span class="mr-2">🎉</span>
-    {{ currentToast()?.message }}
+  <!-- POP-UP SECRETE DE CONNEXION ADMIN MODALE (OPTION POPUP) -->
+  <div *ngIf="showLoginModal()" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+    <div class="w-full max-w-md bg-white dark:bg-neutral-900 border border-gray-200 dark:border-white/10 p-6 rounded-2xl shadow-2xl relative">
+      <button (click)="closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-white text-sm">✕</button>
+      
+      <div class="text-center mb-5">
+        <span class="inline-block bg-red-500/10 text-red-500 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">Accès Sécurisé</span>
+        <h2 class="text-lg font-bold text-gray-900 dark:text-white mt-1">Authentification Requise</h2>
+      </div>
+
+      <form (ngSubmit)="loginAdmin()" class="space-y-4">
+        <div class="flex flex-col gap-1">
+          <label class="text-[11px] font-bold uppercase text-gray-400">Email</label>
+          <input type="email" [ngModel]="usernameInput()" (ngModelChange)="usernameInput.set($event)" name="user" class="w-full bg-gray-50 dark:bg-black border border-gray-200 dark:border-white/10 rounded-lg px-3 py-1.5 text-sm text-gray-800 dark:text-white" required>
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="text-[11px] font-bold uppercase text-gray-400">Mot de passe</label>
+          <input type="password" [ngModel]="passwordInput()" (ngModelChange)="passwordInput.set($event)" name="pass" class="w-full bg-gray-50 dark:bg-black border border-gray-200 dark:border-white/10 rounded-lg px-3 py-1.5 text-sm text-gray-800 dark:text-white" required>
+        </div>
+        <p *ngIf="loginError()" class="text-xs text-red-500 font-medium">⚠️ {{ loginError() }}</p>
+        <button type="submit" class="w-full bg-blue-600 text-white font-bold py-2 rounded-lg text-xs mt-2">Valider l'accès</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div *ngIf="currentToast()" class="fixed bottom-5 right-5 z-50 flex items-center px-4 py-3 rounded-xl shadow-lg text-sm font-semibold bg-emerald-500 text-white border-transparent">
+    <span class="mr-2">🎉</span>{{ currentToast()?.message }}
   </div>
 </div>

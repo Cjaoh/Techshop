@@ -4,7 +4,6 @@ import { Injectable, signal } from '@angular/core';
   providedIn: 'root'
 })
 export class AuthService {
-  // Signal global pour savoir si l'utilisateur est admin ou non
   isAdminConnected = signal<boolean>(false);
 
   login(user: string, pass: string): boolean {

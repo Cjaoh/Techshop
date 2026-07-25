@@ -24,7 +24,7 @@
     <a routerLink="/products" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-xs font-semibold">Boutique</a>
   </div>
 
-  <!-- TABLEAU HISTORIQUE NETTOYÉ -->
+  <!-- TABLEAU HISTORIQUE AVEC BOUTON INVOICE PDF INTERNE -->
   <div *ngIf="orders().length > 0" class="overflow-x-auto bg-white dark:bg-white/5 border border-gray-200 dark:border-white/5 rounded-xl shadow-sm">
     <table class="w-full text-left border-collapse text-sm">
       <thead>
@@ -33,21 +33,20 @@
           <th class="p-4">Date</th>
           <th class="p-4">Articles</th>
           <th class="p-4">Total</th>
-          <th class="p-4">Statut</th>
+          <th class="p-4">Statut & Actions</th>
         </tr>
       </thead>
       <tbody class="divide-y divide-gray-100 dark:divide-white/5 text-gray-700 dark:text-gray-300">
         <tr *ngFor="let order of orders()" class="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
           <td class="p-4 font-mono font-bold text-blue-600 dark:text-blue-400">{{ order.id }}</td>
           
-          <!-- DATE CORRIGÉE : Affiche le texte brut de la date -->
           <td class="p-4 text-gray-500 dark:text-gray-400">{{ order.date }}</td>
           
           <td class="p-4">{{ order.itemsCount }} article(s)</td>
           <td class="p-4 font-extrabold">{{ order.total | currency:'MGA':'Ar ':'1.0-0' }}</td>
           
-          <!-- STATUT UNIQUE -->
-          <td class="p-4">
+          <!-- CELLULE DE STATUT INTEGREE AVEC OPTION IMPRESSION PDF -->
+          <td class="p-4 flex items-center justify-between gap-2 flex-wrap">
             <span [ngClass]="{
                     'bg-orange-50 text-orange-600 dark:bg-orange-950/30 dark:text-orange-400': order.status.includes('Préparation'),
                     'bg-blue-50 text-blue-600 dark:bg-blue-950/30 dark:text-blue-400': order.status.includes('Expédié'),
@@ -56,6 +55,10 @@
                   class="inline-block text-xs font-bold px-2.5 py-1 rounded-full shadow-sm">
               {{ order.status }}
             </span>
+            
+            <button (click)="printInvoice(order)" class="text-xs text-blue-600 dark:text-blue-400 hover:underline font-semibold flex items-center gap-1 cursor-pointer">
+              🖨️ PDF
+            </button>
           </td>
         </tr>
       </tbody>

@@ -6,12 +6,11 @@ export const adminGuard: CanActivateFn = (route, state) => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
-  // Si l'admin est connecté, on le laisse passer
+  // Bloque radicalement l'accès si l'admin n'est pas connecté au préalable
   if (authService.isAdminConnected()) {
     return true;
   }
 
-  // Sinon, on le bloque violemment et on le renvoie à l'accueil
-  router.navigate(['/']);
+  router.navigate(['/']); // Redirection immédiate vers l'accueil
   return false;
 };

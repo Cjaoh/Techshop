@@ -1,8 +1,8 @@
-import { Component, inject, signal, effect, ElementRef, ViewChild } from '@angular/core';
+import { Component, inject, signal, computed, effect, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { OrderService } from '../../services/order.service';
-import { AuthService } from '../../services/auth.service'; // <- Import du service d'authentification
+import { AuthService } from '../../services/auth.service';
 import { Chart, registerables } from 'chart.js';
 
 Chart.register(...registerables);
@@ -16,15 +16,15 @@ Chart.register(...registerables);
 })
 export class AdminComponent {
   private orderService = inject(OrderService);
-  private authService = inject(AuthService); // <- Injection du service
+  private authService = inject(AuthService);
 
   orders = this.orderService.orders;
 
   @ViewChild('salesChart') salesChartCanvas!: ElementRef<HTMLCanvasElement>;
   private chart: Chart | null = null;
 
-  // Lecture directe du statut global de connexion
-  isAuthenticated = this.authService.isAdminConnected;
+  // Signal calculé pour exposer proprement l'état d'authentification au HTML
+  isAuthenticated = computed(() => this.authService.isAdminConnected());
   
   usernameInput = signal<string>('');
   passwordInput = signal<string>('');
@@ -33,6 +33,7 @@ export class AdminComponent {
 
   constructor() {
     effect(() => {
+      // Redessine le graphique au changement d'état, d'onglet ou de commande
       if (this.isAuthenticated() && this.orders().length >= 0 && this.activeTab()) {
         setTimeout(() => this.initChart(), 50);
       }
@@ -40,12 +41,14 @@ export class AdminComponent {
   }
 
   login() {
-    // Appel du validateur centralisé
-    const success = this.authService.login(this.usernameInput(), this.passwordInput());
-    if (!success) {
-      this.loginError.set('Identifiants administrateur incorrects.');
-    } else {
+    const email = this.usernameInput().trim();
+    const pass = this.passwordInput().trim();
+    
+    const success = this.authService.login(email, pass);
+    if (success) {
       this.loginError.set('');
+    } else {
+      this.loginError.set('Identifiants administrateur incorrects.');
     }
   }
 
@@ -53,14 +56,20 @@ export class AdminComponent {
     this.authService.logout();
     this.usernameInput.set('');
     this.passwordInput.set('');
-    if (this.chart) { this.chart.destroy(); this.chart = null; }
+    if (this.chart) {
+      this.chart.destroy();
+      this.chart = null;
+    }
   }
 
-  setTab(tab: 'status' | 'ca') { this.activeTab.set(tab); }
+  setTab(tab: 'status' | 'ca') {
+    this.activeTab.set(tab);
+  }
 
   initChart() {
     if (!this.salesChartCanvas) return;
     if (this.chart) this.chart.destroy();
+
     const ctx = this.salesChartCanvas.nativeElement.getContext('2d');
     if (!ctx) return;
 
