@@ -5,12 +5,15 @@ import { RouterLink } from '@angular/router';
 import { ProductService } from '../../../services/product.service';
 import { CartService } from '../../../services/cart.service';
 import { ToastService } from '../../../services/toast.service';
+import { WishlistService } from '../../../services/wishlist.service';
 import { Product } from '../../../models/product.model';
+
+import { SkeletonLoaderComponent } from '../../../shared/skeleton-loader/skeleton-loader.component';
 
 @Component({
   selector: 'app-product-list',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule],
+  imports: [CommonModule, RouterLink, FormsModule, SkeletonLoaderComponent],
   templateUrl: './product-list.component.html',
   styleUrls: ['./product-list.component.css']
 })
@@ -18,6 +21,7 @@ export class ProductListComponent implements OnInit {
   private productService = inject(ProductService);
   private cartService = inject(CartService);
   private toastService = inject(ToastService);
+  private wishlistService = inject(WishlistService);
 
   // Signaux d'état pour les données de l'API
   products = signal<Product[]>([]);
@@ -111,19 +115,21 @@ export class ProductListComponent implements OnInit {
     this.sortBy.set(select.value);
   }
 
-  // Version unique et propre de la fonction d'ajout
-    addToCart(product: Product) {
-    // Vérifie si le stock est disponible avant d'ajouter
+  addToCart(product: Product) {
     if (product.stock !== undefined && product.stock > 0) {
-      // 1. Ajoute l'article au panier global
       this.cartService.addToCart(product);
-      
-      // 2. Diminue le stock de 1 en direct sur l'écran (OPTION DÉDUCTION REEL)
       product.stock -= 1;
-      
-      // 3. Déclenche la notification Toast
-      this.toastService.show(`"${product.title}" ajouté au panier !`);
+      this.toastService.show(`"${product.title}" ajouté au panier !`, 'success');
     }
   }
 
+  toggleWishlist(product: Product, event: Event): void {
+    event.stopPropagation();
+    event.preventDefault();
+    this.wishlistService.toggleWishlist(product);
+  }
+
+  isInWishlist(productId: number): boolean {
+    return this.wishlistService.isInWishlist(productId);
+  }
 }

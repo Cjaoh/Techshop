@@ -1,0 +1,40 @@
+/* Animation d'ouverture du panier coulissant */
+:host {
+  display: contents;
+}
+
+/* État ouvert du panier - décalage vers la gauche */
+.open {
+  transform: translateX(0) !important;
+}
+
+/* Scrollbar personnalisée pour le contenu du panier */
+.overflow-y-auto::-webkit-scrollbar {
+  width: 6px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.dark .overflow-y-auto::-webkit-scrollbar-thumb {
+  background: #475569;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+.dark .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+/* Animation de transition fluide */
+.transform {
+  will-change: transform;
+}

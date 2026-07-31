@@ -14,20 +14,29 @@
         <a routerLink="/orders" routerLinkActive="text-blue-600 font-semibold" class="text-sm font-medium hover:text-blue-600 transition-colors dark:text-gray-300">Mes Commandes</a>
         
         <!-- Toggle Dark Mode -->
-        <button (click)="toggleTheme()" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
-          <lucide-icon [name]="isDark ? Sun : Moon" class="w-5 h-5 dark:text-white"></lucide-icon>
+        <button (click)="toggleTheme()" aria-label="Toggle Theme" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
+          <lucide-icon [name]="currentTheme() === 'dark' ? Sun : Moon" class="w-5 h-5 dark:text-white"></lucide-icon>
         </button>
 
+        <!-- Favoris (Wishlist) -->
+        <a routerLink="/products" title="Mes Favoris" class="relative p-2 group">
+          <lucide-icon [name]="Heart" class="w-6 h-6 dark:text-white group-hover:text-red-500 transition-colors"></lucide-icon>
+          <span *ngIf="totalWishlistItems() > 0" 
+                class="absolute top-0 right-0 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white animate-in zoom-in">
+            {{ totalWishlistItems() }}
+          </span>
+        </a>
+
         <!-- Panier -->
-        <a routerLink="/cart" class="relative p-2 group">
+        <button (click)="openCart()" class="relative p-2 group hover:bg-gray-100 dark:hover:bg-white/10 rounded-full transition-colors">
           <lucide-icon [name]="ShoppingCart" class="w-6 h-6 dark:text-white group-hover:text-blue-600 transition-colors"></lucide-icon>
-          
+
           <!-- Badge Signal mis à jour -->
-          <span *ngIf="totalItems() > 0" 
+          <span *ngIf="totalItems() > 0"
                 class="absolute top-0 right-0 flex h-4 w-4 items-center justify-center rounded-full bg-blue-600 text-[10px] font-bold text-white animate-in zoom-in">
             {{ totalItems() }}
           </span>
-        </a>
+        </button>
       </div>
 
     </div>

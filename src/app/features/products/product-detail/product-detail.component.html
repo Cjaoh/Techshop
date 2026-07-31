@@ -1,38 +1,94 @@
-<div class="container mx-auto p-4 max-w-4xl min-h-[calc(100vh-64px)] flex flex-col justify-center">
+<div class="container mx-auto p-4 max-w-5xl">
   
-  <div *ngIf="loading()" class="text-center py-12">
-    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600 mx-auto"></div>
+  <!-- Back button -->
+  <div class="mb-6">
+    <a routerLink="/products" class="inline-flex items-center gap-2 text-sm font-semibold text-gray-500 hover:text-blue-600 dark:text-gray-400 transition-colors">
+      ← Retour à la boutique
+    </a>
   </div>
 
-  <div *ngIf="!loading() && product()" class="bg-white dark:bg-white/5 border border-gray-200 dark:border-white/5 rounded-2xl overflow-hidden shadow-sm p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
+  <!-- SKELETON LOADING -->
+  <div *ngIf="loading()" class="grid grid-cols-1 md:grid-cols-2 gap-8">
+    <app-skeleton-loader></app-skeleton-loader>
+    <app-skeleton-loader></app-skeleton-loader>
+  </div>
+
+  <!-- PRODUCT DETAIL DISPLAY -->
+  <div *ngIf="!loading() && product()" class="bg-white dark:bg-white/5 border border-gray-200 dark:border-white/5 rounded-2xl overflow-hidden shadow-sm p-6 md:p-8 grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
     
-    <!-- Image -->
-    <div class="bg-gray-50 dark:bg-neutral-900 rounded-xl p-8 flex items-center justify-center">
-      <img [src]="product()?.image" [alt]="product()?.title" class="max-h-80 object-contain">
+    <!-- Image & Zoom Preview -->
+    <div class="relative bg-gray-50 dark:bg-neutral-900 rounded-xl p-8 flex items-center justify-center group overflow-hidden">
+      <button (click)="toggleWishlist()" 
+              [title]="isInWishlist(product()!.id) ? 'Retirer des favoris' : 'Ajouter aux favoris'"
+              class="absolute top-4 right-4 z-10 p-3 rounded-full bg-white/80 dark:bg-black/60 backdrop-blur-sm shadow-lg hover:scale-110 transition-all duration-200">
+        <span class="text-xl">{{ isInWishlist(product()!.id) ? '❤️' : '🤍' }}</span>
+      </button>
+      <img [src]="product()?.image" [alt]="product()?.title" class="max-h-96 object-contain transform group-hover:scale-110 transition-transform duration-500">
     </div>
 
     <!-- Infos -->
     <div class="flex flex-col justify-between">
       <div>
-        <span class="text-xs uppercase font-bold text-blue-500 tracking-wider">{{ product()?.category }}</span>
-        <h2 class="text-xl md:text-2xl font-bold text-gray-900 dark:text-white mt-1 mb-4">{{ product()?.title }}</h2>
-        <p class="text-gray-500 dark:text-gray-400 text-sm leading-relaxed mb-6">{{ product()?.description }}</p>
+        <div class="flex justify-between items-center mb-2">
+          <span class="text-xs uppercase font-bold text-blue-500 tracking-wider bg-blue-50 dark:bg-blue-950/40 px-2.5 py-1 rounded-md">{{ product()?.category }}</span>
+          <div *ngIf="product()?.rating" class="flex items-center gap-1 text-sm text-amber-500 font-bold">
+            ⭐ <span>{{ product()?.rating?.rate }} / 5</span>
+          </div>
+        </div>
+
+        <h1 class="text-2xl md:text-3xl font-extrabold text-gray-900 dark:text-white mb-4 leading-tight">{{ product()?.title }}</h1>
+        <p class="text-gray-600 dark:text-gray-300 text-sm leading-relaxed mb-6">{{ product()?.description }}</p>
       </div>
 
-      <div class="pt-4 border-t border-gray-100 dark:border-white/5">
-        <div class="flex items-center justify-between mb-4">
-          <span class="text-2xl font-extrabold text-blue-600 dark:text-blue-400">{{ product()?.price | currency:'MGA':'Ar':'1.2-2':'mg' }}</span>
+      <div class="pt-6 border-t border-gray-100 dark:border-white/5">
+        <!-- Stock status -->
+        <div class="mb-4">
+          <span *ngIf="product()?.stock && product()!.stock! > 5" class="inline-flex items-center gap-1.5 text-xs font-bold text-green-600 bg-green-50 dark:bg-green-950/30 px-3 py-1.5 rounded-lg">
+            ✅ En stock ({{ product()?.stock }} unités disponibles)
+          </span>
+          <span *ngIf="product()?.stock && product()!.stock! <= 5 && product()!.stock! > 0" class="inline-flex items-center gap-1.5 text-xs font-bold text-orange-500 bg-orange-50 dark:bg-orange-950/30 px-3 py-1.5 rounded-lg animate-pulse">
+            ⚠️ Stock limité (Plus que {{ product()?.stock }} en réserve !)
+          </span>
+          <span *ngIf="product()?.stock === 0" class="inline-flex items-center gap-1.5 text-xs font-bold text-red-500 bg-red-50 dark:bg-red-950/30 px-3 py-1.5 rounded-lg">
+            ❌ Rupture de stock
+          </span>
         </div>
-        <div class="flex gap-3">
-          <button (click)="addToCart()" class="flex-grow bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-lg text-sm transition-colors shadow-sm">
-            Ajouter au panier
+
+        <div class="flex items-center justify-between mb-6">
+          <span class="text-3xl font-black text-blue-600 dark:text-blue-400">{{ product()?.price | currency:'MGA':'Ar ':'1.0-0' }}</span>
+        </div>
+
+        <div class="flex gap-4">
+          <button (click)="addToCart()" 
+                  [disabled]="product()?.stock === 0" 
+                  [ngClass]="product()?.stock === 0 ? 'bg-gray-300 dark:bg-neutral-800 text-gray-500 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-600/30'" 
+                  class="flex-1 font-bold py-3.5 rounded-xl text-sm transition-all flex items-center justify-center gap-2">
+            🛒 {{ product()?.stock === 0 ? 'Épuisé' : 'Ajouter au Panier' }}
           </button>
-          <a routerLink="/products" class="bg-gray-100 dark:bg-white/5 text-gray-800 dark:text-gray-300 font-medium px-4 py-2.5 rounded-lg text-sm transition-colors border border-transparent hover:border-gray-200">
-            Retour
-          </a>
         </div>
       </div>
     </div>
-
   </div>
+
+  <!-- SIMILAR PRODUCTS SECTION -->
+  <div *ngIf="!loading() && similarProducts().length > 0" class="mt-12">
+    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-6">Produits Similaires</h3>
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+      <div *ngFor="let sim of similarProducts()" class="bg-white dark:bg-white/5 border border-gray-200 dark:border-white/5 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col">
+        <a [routerLink]="['/products', sim.id]" class="relative pt-[100%] bg-gray-50 dark:bg-neutral-900 p-4 block">
+          <img [src]="sim.image" [alt]="sim.title" class="absolute top-0 left-0 w-full h-full object-contain p-4">
+        </a>
+        <div class="p-4 flex flex-col flex-grow justify-between">
+          <a [routerLink]="['/products', sim.id]">
+            <h4 class="text-xs font-bold text-gray-900 dark:text-white line-clamp-2 mb-2 hover:text-blue-600 transition-colors">{{ sim.title }}</h4>
+          </a>
+          <div class="flex items-center justify-between pt-2 border-t border-gray-100 dark:border-white/5 mt-auto">
+            <span class="text-xs font-black text-blue-600 dark:text-blue-400">{{ sim.price | currency:'MGA':'Ar ':'1.0-0' }}</span>
+            <button (click)="addToCart(sim)" class="bg-blue-600 text-white p-1.5 rounded-lg text-xs hover:bg-blue-700">🛒</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
