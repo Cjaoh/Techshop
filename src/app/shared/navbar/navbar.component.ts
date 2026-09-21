@@ -2,7 +2,10 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { CartService } from '../../services/cart.service';
-import { LucideAngularModule, ShoppingCart, Sun, Moon, Menu } from 'lucide-angular';
+import { ThemeService } from '../../services/theme.service';
+import { WishlistService } from '../../services/wishlist.service';
+import { SlideOverService } from '../../services/slide-over.service';
+import { LucideAngularModule, ShoppingCart, Sun, Moon, Menu, Heart } from 'lucide-angular';
 
 @Component({
   selector: 'app-navbar',
@@ -11,24 +14,27 @@ import { LucideAngularModule, ShoppingCart, Sun, Moon, Menu } from 'lucide-angul
   templateUrl: './navbar.component.html'
 })
 export class NavbarComponent {
-  // Injection du service de panier
-  private cartService = inject(CartService); 
+  private readonly cartService = inject(CartService);
+  private readonly themeService = inject(ThemeService);
+  private readonly wishlistService = inject(WishlistService);
+  private readonly slideOverService = inject(SlideOverService);
 
-  // Propriété pour la gestion du thème
-  isDark = false;
+  readonly currentTheme = this.themeService.theme;
 
-  // Raccourcis vers les icônes Lucide pour le HTML
   readonly ShoppingCart = ShoppingCart;
   readonly Sun = Sun;
   readonly Moon = Moon;
   readonly Menu = Menu;
+  readonly Heart = Heart;
 
-  // Exposition du signal calculé pour afficher le nombre d'articles
   totalItems = this.cartService.totalItems;
+  totalWishlistItems = this.wishlistService.totalWishlistItems;
 
-  // Gestion du basculement de thème (Clair / Sombre)
-  toggleTheme() {
-    this.isDark = !this.isDark;
-    document.documentElement.classList.toggle('dark');
+  toggleTheme(): void {
+    this.themeService.toggleTheme();
+  }
+
+  openCart(): void {
+    this.slideOverService.open();
   }
 }

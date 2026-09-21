@@ -1,0 +1,148 @@
+<!-- Overlay de fond -->
+<div *ngIf="isOpen()" 
+     class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm transition-opacity duration-300"
+     (click)="close()"></div>
+
+<!-- Panneau coulissant -->
+<div [class.open]="isOpen()" 
+     class="fixed top-0 right-0 z-50 h-full w-full max-w-md bg-white dark:bg-neutral-900 shadow-2xl transform transition-transform duration-300 ease-in-out translate-x-full border-l border-gray-200 dark:border-white/10 flex flex-col">
+  
+  <!-- Header du panier -->
+  <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-white/10">
+    <div class="flex items-center gap-3">
+      <div class="bg-blue-600/10 p-2 rounded-lg">
+        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path>
+        </svg>
+      </div>
+      <div>
+        <h2 class="text-lg font-bold text-gray-900 dark:text-white">Votre Panier</h2>
+        <p class="text-sm text-gray-500 dark:text-gray-400">{{ totalItems() }} article(s)</p>
+      </div>
+    </div>
+    <button (click)="close()" 
+            class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
+      <svg class="w-6 h-6 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Contenu du panier -->
+  <div class="flex-1 overflow-y-auto p-6">
+    <!-- Panier vide -->
+    <div *ngIf="cartItems().length === 0" class="flex flex-col items-center justify-center h-full text-center py-12">
+      <div class="bg-gray-100 dark:bg-white/5 p-6 rounded-full mb-4">
+        <svg class="w-12 h-12 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+        </svg>
+      </div>
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Votre panier est vide</h3>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">Découvrez nos produits et remplissez votre panier !</p>
+      <button (click)="close()" 
+              routerLink="/products"
+              class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded-lg transition-colors">
+        Découvrir la Boutique
+      </button>
+    </div>
+
+    <!-- Liste des articles -->
+    <div *ngIf="cartItems().length > 0" class="space-y-4">
+      <div *ngFor="let item of cartItems()" 
+           class="flex gap-4 p-4 bg-gray-50 dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/5">
+        
+        <!-- Image du produit -->
+        <div class="flex-shrink-0">
+          <img [src]="item.product.image" 
+               [alt]="item.product.title"
+               class="w-20 h-20 object-cover rounded-lg">
+        </div>
+
+        <!-- Détails du produit -->
+        <div class="flex-1 min-w-0">
+          <h3 class="font-semibold text-gray-900 dark:text-white text-sm truncate">{{ item.product.title }}</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ item.product.category }}</p>
+          <p class="text-sm font-bold text-blue-600 mt-2">{{ (item.product.price * item.quantity).toLocaleString('fr-FR') }} Ar</p>
+        </div>
+
+        <!-- Contrôles de quantité -->
+        <div class="flex flex-col items-end gap-2">
+          <button (click)="removeFromCart(item.product.id)" 
+                  class="text-gray-400 hover:text-red-500 transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+            </svg>
+          </button>
+          
+          <div class="flex items-center gap-2 bg-white dark:bg-black rounded-lg border border-gray-200 dark:border-white/10">
+            <button (click)="decrementQuantity(item.product.id)" 
+                    class="w-8 h-8 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/10 rounded-l-lg transition-colors">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
+              </svg>
+            </button>
+            <span class="w-8 text-center text-sm font-semibold text-gray-900 dark:text-white">{{ item.quantity }}</span>
+            <button (click)="incrementQuantity(item.product)" 
+                    class="w-8 h-8 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/10 rounded-r-lg transition-colors">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer avec récapitulatif et actions -->
+  <div *ngIf="cartItems().length > 0" class="border-t border-gray-200 dark:border-white/10 p-6 bg-gray-50 dark:bg-white/5">
+    <!-- Code promo -->
+    <div class="mb-4">
+      <div class="flex gap-2">
+        <input type="text" 
+               [ngModel]="promoInput()" 
+               (ngModelChange)="promoInput.set($event)"
+               placeholder="Code promo"
+               class="flex-1 bg-white dark:bg-black border border-gray-200 dark:border-white/10 rounded-lg px-4 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <button (click)="applyCoupon()" 
+                class="bg-gray-900 dark:bg-white text-white dark:text-black font-semibold px-4 py-2 rounded-lg text-sm hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors">
+          Appliquer
+        </button>
+      </div>
+      <p *ngIf="promoError()" class="text-xs text-red-500 mt-2">{{ promoError() }}</p>
+      <p *ngIf="promoSuccess()" class="text-xs text-green-600 mt-2">{{ promoSuccess() }}</p>
+    </div>
+
+    <!-- Récapitulatif des prix -->
+    <div class="space-y-2 mb-4">
+      <div class="flex justify-between text-sm text-gray-600 dark:text-gray-400">
+        <span>Sous-total</span>
+        <span>{{ totalPriceBeforeDiscount().toLocaleString('fr-FR') }} Ar</span>
+      </div>
+      <div *ngIf="discountAmount() > 0" class="flex justify-between text-sm text-green-600">
+        <span>Réduction</span>
+        <span>-{{ discountAmount().toLocaleString('fr-FR') }} Ar</span>
+      </div>
+      <div class="flex justify-between text-lg font-bold text-gray-900 dark:text-white pt-2 border-t border-gray-200 dark:border-white/10">
+        <span>Total</span>
+        <span class="text-blue-600">{{ totalPrice().toLocaleString('fr-FR') }} Ar</span>
+      </div>
+    </div>
+
+    <!-- Boutons d'action -->
+    <div class="space-y-2">
+      <button routerLink="/cart" 
+              (click)="goToFullCart()"
+              class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition-colors flex items-center justify-center gap-2">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
+        Passer la Commande
+      </button>
+      <button (click)="clearCart()" 
+              class="w-full bg-gray-200 dark:bg-white/10 text-gray-700 dark:text-gray-300 font-medium py-2 rounded-xl hover:bg-gray-300 dark:hover:bg-white/20 transition-colors text-sm">
+        Vider le panier
+      </button>
+    </div>
+  </div>
+</div>

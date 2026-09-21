@@ -45,8 +45,28 @@
     </div>
   </div>
 
-  <!-- Toast -->
-  <div *ngIf="currentToast()" class="fixed bottom-5 right-5 z-50 flex items-center px-4 py-3 rounded-xl shadow-lg text-sm font-semibold bg-emerald-500 text-white border-transparent">
-    <span class="mr-2">🎉</span>{{ currentToast()?.message }}
+  <!-- Toast Container Multi-Notifications -->
+  <div class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none">
+    <div *ngFor="let toast of toasts()"
+         (click)="removeToast(toast.id)"
+         [ngClass]="{
+           'bg-emerald-600 border-emerald-500': toast.type === 'success',
+           'bg-red-600 border-red-500': toast.type === 'error',
+           'bg-amber-600 border-amber-500': toast.type === 'warning',
+           'bg-blue-600 border-blue-500': toast.type === 'info'
+         }"
+         class="pointer-events-auto flex items-center justify-between px-4 py-3 rounded-xl shadow-2xl text-sm font-semibold text-white border transition-all duration-300 transform translate-y-0 cursor-pointer">
+      <div class="flex items-center gap-2">
+        <span *ngIf="toast.type === 'success'">🎉</span>
+        <span *ngIf="toast.type === 'error'">⚠️</span>
+        <span *ngIf="toast.type === 'warning'">🔔</span>
+        <span *ngIf="toast.type === 'info'">ℹ️</span>
+        <span>{{ toast.message }}</span>
+      </div>
+      <button class="ml-4 text-xs opacity-70 hover:opacity-100">✕</button>
+    </div>
   </div>
+
+  <!-- Panier Coulissant (Slide-Over Cart) -->
+  <app-slide-over-cart></app-slide-over-cart>
 </div>

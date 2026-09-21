@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterOutlet, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { NavbarComponent } from './shared/navbar/navbar.component';
+import { SlideOverCartComponent } from './shared/slide-over-cart/slide-over-cart.component';
 import { ToastService } from './services/toast.service';
 import { AuthService } from './services/auth.service';
 import { Router } from '@angular/router';
@@ -15,7 +16,8 @@ import { Router } from '@angular/router';
     RouterOutlet, 
     RouterLink, 
     FormsModule, 
-    NavbarComponent
+    NavbarComponent,
+    SlideOverCartComponent
   ],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
@@ -28,7 +30,11 @@ export class AppComponent {
   
   // Propriétés globales
   readonly title = 'tech-shop-premium';
-  readonly currentToast = this.toastService.toast;
+  readonly toasts = this.toastService.toasts;
+
+  removeToast(id: string): void {
+    this.toastService.remove(id);
+  }
 
   // Signaux d'état
   readonly isAdmin = this.authService.isAdminConnected;

@@ -33,20 +33,20 @@
     </button>
   </div>
 
-  <!-- SKELETON LOADING ANIMÉ (REMPLACE LE SPINNER - OPTION 1) -->
+  <!-- SKELETON LOADING ANIMÉ -->
   <div *ngIf="loading()" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-    <div *ngFor="let item of [1,2,3,4]" class="bg-white dark:bg-white/5 border border-gray-200 dark:border-white/5 rounded-xl p-4 animate-pulse space-y-4">
-      <div class="bg-gray-200 dark:bg-neutral-800 h-48 w-full rounded-lg"></div>
-      <div class="h-4 bg-gray-200 dark:bg-neutral-800 rounded w-2/3"></div>
-      <div class="h-3 bg-gray-200 dark:bg-neutral-800 rounded w-full"></div>
-      <div class="h-8 bg-gray-200 dark:bg-neutral-800 rounded w-full mt-4"></div>
-    </div>
+    <app-skeleton-loader *ngFor="let item of [1,2,3,4,5,6,7,8]"></app-skeleton-loader>
   </div>
 
   <!-- GRILLE DES PRODUITS FILTRÉS ANIMÉE AVEC HOVER SCALE-105 -->
   <div *ngIf="!loading()" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
     <div *ngFor="let product of filteredProducts()" class="bg-white dark:bg-white/5 border border-gray-200 dark:border-white/5 rounded-xl overflow-hidden shadow-sm hover:shadow-md hover:border-blue-500/30 transform hover:scale-105 transition-all duration-300 flex flex-col h-full">
       <div class="relative pt-[100%] bg-gray-50 dark:bg-neutral-900 p-4">
+        <button (click)="toggleWishlist(product, $event)" 
+                [title]="isInWishlist(product.id) ? 'Retirer des favoris' : 'Ajouter aux favoris'"
+                class="absolute top-3 right-3 z-10 p-2 rounded-full bg-white/80 dark:bg-black/60 backdrop-blur-sm shadow-md hover:scale-110 transition-all duration-200">
+          <span class="text-base">{{ isInWishlist(product.id) ? '❤️' : '🤍' }}</span>
+        </button>
         <a [routerLink]="['/products', product.id]">
           <img [src]="product.image" [alt]="product.title" class="absolute top-0 left-0 w-full h-full object-contain p-4 cursor-pointer">
         </a>
