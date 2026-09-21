@@ -1,26 +1,25 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Product } from '../models/product.model';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
+import { environment } from '../../environments/environment';
+import { Product, ProductApi, toProduct } from '../models/product.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ProductService {
   private http = inject(HttpClient);
-  private apiUrl = 'https://fakestoreapi.com/products';
+  private apiUrl = `${environment.apiUrl}/products`;
 
   getProducts(): Observable<Product[]> {
-    return this.http.get<Product[]>(this.apiUrl);
+    return this.http
+      .get<ProductApi[]>(this.apiUrl)
+      .pipe(map((products) => products.map(toProduct)));
   }
 
   getProductById(id: number): Observable<Product> {
-    return this.http.get<Product>(`${this.apiUrl}/${id}`);
+    return this.http
+      .get<ProductApi>(`${this.apiUrl}/${id}`)
+      .pipe(map(toProduct));
   }
-
-  getCategories(): Observable<string[]> {
-    return this.http.get<string[]>(`${this.apiUrl}/categories`);
-  }
-
-  
 }
